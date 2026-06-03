@@ -12,6 +12,9 @@ Source0:        %{name}-%{version}-vendor.tar.gz
 
 BuildArch:      noarch
 
+BuildRequires:  /usr/bin/node
+BuildRequires:  nodejs(engine) >= 22
+
 Requires:       /usr/bin/node
 Requires:       nodejs(engine) >= 22
 Recommends:     beads
