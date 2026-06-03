@@ -23,7 +23,6 @@ done
 
 version="$(awk '$1 == "Version:" { print $2; exit }' "$spec")"
 node_version="$(awk '$1 == "%global" && $2 == "node_version" { print $3; exit }' "$spec")"
-upstream_repo="${UPSTREAM_REPO:-https://github.com/mantoni/beads-ui.git}"
 
 if [[ -z "$version" || -z "$node_version" ]]; then
     printf 'Could not read Version or node_version from %s\n' "$spec" >&2
@@ -104,8 +103,20 @@ ensure_node
 
 source_tarball="${sources_dir}/beads-ui-${version}-vendor.tar.gz"
 srcdir="${workdir}/beads-ui-${version}"
+source_archive="${workdir}/beads-ui-v${version}.tar.gz"
+archive_url="${UPSTREAM_TARBALL_URL:-https://github.com/mantoni/beads-ui/archive/refs/tags/v${version}.tar.gz}"
 
-git clone --depth 1 --branch "v${version}" "$upstream_repo" "$srcdir" >/dev/null 2>&1
+download "$archive_url" "$source_archive"
+tar xzf "$source_archive" -C "$workdir"
+
+if [[ ! -d "$srcdir" ]]; then
+    extracted_dir="$(find "$workdir" -mindepth 1 -maxdepth 1 -type d -name 'beads-ui-*' | head -n 1)"
+    if [[ -z "$extracted_dir" ]]; then
+        printf 'Could not find extracted upstream source directory in %s\n' "$workdir" >&2
+        exit 1
+    fi
+    mv "$extracted_dir" "$srcdir"
+fi
 
 actual_version="$(
     cd "$srcdir"
@@ -127,8 +138,6 @@ fi
     test -s app/main.bundle.js
     node bin/bdui.js --version | grep -qx "$version"
 )
-
-rm -rf "$srcdir/.git"
 
 epoch="${SOURCE_DATE_EPOCH:-$(date -u +%s)}"
 rm -f "$source_tarball"
