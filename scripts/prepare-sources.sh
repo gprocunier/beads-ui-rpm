@@ -81,6 +81,12 @@ ensure_node() {
         aarch64|arm64)
             node_arch="arm64"
             ;;
+        ppc64le)
+            node_arch="ppc64le"
+            ;;
+        s390x)
+            node_arch="s390x"
+            ;;
         *)
             printf 'Unsupported source-build architecture for Node: %s\n' "$(uname -m)" >&2
             exit 1
@@ -88,9 +94,9 @@ ensure_node() {
     esac
 
     local node_base="node-v${node_version}-linux-${node_arch}"
-    local node_tarball="${workdir}/${node_base}.tar.xz"
-    download "https://nodejs.org/dist/v${node_version}/${node_base}.tar.xz" "$node_tarball"
-    tar xJf "$node_tarball" -C "$workdir"
+    local node_tarball="${workdir}/${node_base}.tar.gz"
+    download "https://nodejs.org/dist/v${node_version}/${node_base}.tar.gz" "$node_tarball"
+    tar xzf "$node_tarball" -C "$workdir"
     export PATH="${workdir}/${node_base}/bin:${PATH}"
 }
 
